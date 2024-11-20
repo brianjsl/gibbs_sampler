@@ -3,6 +3,7 @@ from tqdm import tqdm
 from graph import GraphModel
 from random import shuffle
 from functools import partial
+from test import fraction_bordering_different_value
 
 class SquareLatticeIsingModel:
     def __init__(self, N: int = 60, theta: float = 0.45, p1_init: float = 1):
@@ -180,9 +181,13 @@ class SquareLatticeIsingModel:
                 raise NotImplementedError('Update scheme not implemented.')
             pbar.set_description(f'Node Sampler, p={p:.3f}')
 
+            fraction = 0
             if (i + 1) % vis_step == 0 or i == 0:
                 node_samples.append(self.spins.copy())
-        return node_samples
+            if (iterations // vis_step - 1) * (vis_step) <= i:
+                fraction += fraction_bordering_different_value(self.spins)
+            fraction /= (iterations // vis_step)
+        return node_samples, fraction
 
     def _sample_block(self, iterations: int, vis_step: int, **kwargs):
         r'''
@@ -193,10 +198,15 @@ class SquareLatticeIsingModel:
         block_samples = []
         pbar = tqdm(range(iterations))
 
+        fraction = 0
+
         for i in pbar:
             self._block_gibbs_step(update_scheme)
             pbar.set_description('Block Sampler')
 
             if (i + 1) % vis_step == 0:
                 block_samples.append(self.spins.copy())
-        return block_samples
+            if (iterations // vis_step - 1) * (vis_step) <= i:
+                fraction += fraction_bordering_different_value(self.spins)
+            fraction /= (iterations // vis_step)
+        return block_samples, fraction
