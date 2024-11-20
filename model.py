@@ -139,7 +139,7 @@ class SquareLatticeIsingModel:
         next_spins = comb_model.sample()
         for i in comb_model.get_V():
             j, k = i // self.N, i % self.N
-            self.spins[j, k] = next_spins[i]  # next_spins[i] is already in {-1, 1}
+            self.spins[j, k] = next_spins[i]  
 
     def _get_neighbors(self, i, j):
         r'''
@@ -170,6 +170,7 @@ class SquareLatticeIsingModel:
 
         node_samples = []
         pbar = tqdm(range(iterations))
+        fraction = 0
         for i in pbar:
             if update_scheme == 'iterative':
                 for j in range(self.N**2):
@@ -181,12 +182,11 @@ class SquareLatticeIsingModel:
                 raise NotImplementedError('Update scheme not implemented.')
             pbar.set_description(f'Node Sampler, p={p:.3f}')
 
-            fraction = 0
             if (i + 1) % vis_step == 0 or i == 0:
                 node_samples.append(self.spins.copy())
             if (iterations // vis_step - 1) * (vis_step) <= i:
                 fraction += fraction_bordering_different_value(self.spins)
-            fraction /= (iterations // vis_step)
+        fraction /= vis_step
         return node_samples, fraction
 
     def _sample_block(self, iterations: int, vis_step: int, **kwargs):
@@ -208,5 +208,5 @@ class SquareLatticeIsingModel:
                 block_samples.append(self.spins.copy())
             if (iterations // vis_step - 1) * (vis_step) <= i:
                 fraction += fraction_bordering_different_value(self.spins)
-            fraction /= (iterations // vis_step)
+        fraction /= vis_step
         return block_samples, fraction

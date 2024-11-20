@@ -37,6 +37,7 @@ class GraphModel():
         # Upward message passing
         messages = {}
 
+        #calculates the message from node to parent 
         def upward_message(node, parent):
             messages_from_children = {}
             for child in self.adjacency[node]:
